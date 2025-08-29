@@ -15,6 +15,8 @@ import plotly.graph_objects as go
 import io
 import bibtexparser
 from nltk.corpus import stopwords
+from groq import Groq
+client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
 
 # ================== CONFIG ==================
@@ -49,15 +51,23 @@ def extract_metadata(text):
             break
     return {"title": title, "abstract": abstract}
 
-def summarize_text(text):
-    if len(text) < 50:
-        return text
-    return summarizer(text[:1000], max_length=130, min_length=30, do_sample=False)[0]['summary_text']
+# ---- SUMMARIZATION ----
+def get_summary(text):
+    prompt = f"Summarize the key contributions and findings of this abstract in 2–3 sentences:\n\n{text}"
+    response = client.chat.completions.create(
+        model="llama3-8b-8192",
+        messages=[{"role": "user", "content": prompt}]
+    )
+    return response.choices[0].message.content.strip()
 
-def generate_limitations_and_future(summary):
-    prompt = f"Paper Summary: {summary}\n\nList possible limitations and future directions in 2-3 sentences."
-    # For simplicity we reuse summarizer as a text generator
-    return summarizer(prompt, max_length=150, min_length=50, do_sample=False)[0]['summary_text']
+# ---- LIMITATIONS ----
+def get_limitations(text):
+    prompt = f"Extract only the limitations or challenges discussed in this abstract (if any). If none, write 'No explicit limitations mentioned'.\n\n{text}"
+    response = client.chat.completions.create(
+        model="llama3-8b-8192",
+        messages=[{"role": "user", "content": prompt}]
+    )
+    return response.choices[0].message.content.strip()
 
 
 # Download NLTK stopwords if not already
