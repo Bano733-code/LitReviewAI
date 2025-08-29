@@ -89,7 +89,7 @@ def lda_topic_modeling(papers):
 
 # ========== WORDCLOUD ==========
 def generate_wordcloud(papers):
-   text = " ".join([p["abstract"] for p in papers if p["abstract"]])
+    text = " ".join([p["abstract"] for p in papers if p["abstract"]])
     
     # Merge NLTK + WordCloud stopwords
     stop_words = set(stopwords.words("english"))
