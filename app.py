@@ -3,7 +3,6 @@ import streamlit as st
 import os
 import pandas as pd
 import fitz  # PyMuPDF for PDF parsing
-from transformers import pipeline
 from gensim import corpora, models
 from gensim.utils import simple_preprocess
 from wordcloud import WordCloud,STOPWORDS
@@ -24,7 +23,6 @@ st.set_page_config(page_title="LitReviewAI", page_icon="📚", layout="wide")
 st.title("📚 LitReviewAI: Automated Research Paper Reviewer")
 
 # ================== GLOBALS ==================
-summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
 kw_model = KeyBERT()
 
 if "papers" not in st.session_state:
@@ -169,8 +167,8 @@ with tabs[0]:
         for file in uploaded_files:
             text = extract_text_from_pdf(file)
             meta = extract_metadata(text)
-            meta["summary"] = summarize_text(meta["abstract"])
-            meta["limitations"] = generate_limitations_and_future(meta["summary"])
+            meta["summary"] = get_summary(meta["abstract"])
+            meta["limitations"] = get_limitations(meta["abstract"])
             # Extract only keywords, not scores, and join into string
             keywords = kw_model.extract_keywords(meta["abstract"], top_n=5)
             meta["keywords"] = ", ".join([kw[0] for kw in keywords]) if keywords else ""
