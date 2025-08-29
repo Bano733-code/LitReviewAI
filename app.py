@@ -57,17 +57,39 @@ def generate_limitations_and_future(summary):
     # For simplicity we reuse summarizer as a text generator
     return summarizer(prompt, max_length=150, min_length=50, do_sample=False)[0]['summary_text']
 
+from nltk.corpus import stopwords
+
+# Download NLTK stopwords if not already
+import nltk
+nltk.download('stopwords')
+stop_words = set(stopwords.words("english"))
+
+# ========== LDA TOPIC MODELING ==========
 def lda_topic_modeling(papers):
-    texts = [simple_preprocess(p["abstract"]) for p in papers if p["abstract"]]
+    # Preprocess abstracts with stopword removal
+    texts = [
+        [word for word in simple_preprocess(p["abstract"]) if word not in stop_words]
+        for p in papers if p["abstract"]
+    ]
+    
     dictionary = corpora.Dictionary(texts)
     corpus = [dictionary.doc2bow(text) for text in texts]
     lda_model = models.LdaModel(corpus, num_topics=3, id2word=dictionary, passes=10)
-    topics = lda_model.print_topics()
-    return topics
 
+    topics = lda_model.print_topics(num_words=6)
+
+    # Convert topics into a DataFrame
+    topic_data = []
+    for topic_id, words in topics:
+        topic_data.append({"Topic ID": topic_id, "Keywords": words})
+    
+    df = pd.DataFrame(topic_data)
+    return df
+
+# ========== WORDCLOUD ==========
 def generate_wordcloud(papers):
     text = " ".join([p["abstract"] for p in papers if p["abstract"]])
-    wc = WordCloud(width=800, height=400).generate(text)
+    wc = WordCloud(width=800, height=400, stopwords=STOPWORDS).generate(text)
     fig, ax = plt.subplots()
     ax.imshow(wc, interpolation="bilinear")
     ax.axis("off")
@@ -156,9 +178,8 @@ with tabs[1]:
 with tabs[2]:
     st.header("Topic Modeling & Word Cloud")
     if st.session_state.papers:
-        topics = lda_topic_modeling(st.session_state.papers)
-        for t in topics:
-            st.write(t)
+        topics_df = lda_topic_modeling(st.session_state.papers)
+        st.dataframe(topics_df)   # Display as DataFrame instead of CSV
         generate_wordcloud(st.session_state.papers)
     else:
         st.info("Upload papers first.")
