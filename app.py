@@ -37,6 +37,26 @@ def extract_text_from_pdf(pdf_file):
     for page in doc:
         text += page.get_text()
     return text
+def extract_authors_from_pdf(pdf_file):
+    doc = fitz.open(stream=pdf_file.read(), filetype="pdf")
+    first_page_text = doc[0].get_text("text")
+
+    # simple heuristic: authors are usually after title but before abstract
+    lines = first_page_text.split("\n")
+    authors = []
+
+    for line in lines[1:15]:  # scan first 15 lines after title
+        if "abstract" in line.lower():
+            break
+        # avoid very long lines (likely affiliations)
+        if 2 <= len(line.split()) <= 8:
+            authors.append(line.strip())
+
+    # fallback if nothing found
+    if not authors:
+        authors = ["Unknown"]
+
+    return authors
 
 def extract_metadata(text):
     # Very naive metadata extractor (replace with actual if needed)
@@ -167,12 +187,13 @@ with tabs[0]:
         for file in uploaded_files:
             text = extract_text_from_pdf(file)
             meta = extract_metadata(text)
+            file.seek(0)  # reset pointer because we already read it
+            meta["authors"] = extract_authors_from_pdf(file)
             meta["summary"] = get_summary(meta["abstract"])
             meta["limitations"] = get_limitations(meta["abstract"])
             # Extract only keywords, not scores, and join into string
             keywords = kw_model.extract_keywords(meta["abstract"], top_n=5)
             meta["keywords"] = ", ".join([kw[0] for kw in keywords]) if keywords else ""
-            meta["authors"] = ["Author A", "Author B"]  # Dummy authors
             st.session_state.papers.append(meta)
         st.success("Papers processed and added!")
 
