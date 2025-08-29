@@ -3,8 +3,8 @@ title: LitReviewAI
 emoji: 💻
 colorFrom: green
 colorTo: pink
-sdk: gradio
-sdk_version: 5.44.1
+sdk: streamlit
+sdk_version: 1.48.1
 app_file: app.py
 pinned: false
 short_description: 👉 “Turn PDFs into Research Insights in Seconds."
