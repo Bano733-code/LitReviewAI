@@ -6,7 +6,7 @@ import fitz  # PyMuPDF for PDF parsing
 from transformers import pipeline
 from gensim import corpora, models
 from gensim.utils import simple_preprocess
-from wordcloud import WordCloud
+from wordcloud import WordCloud,STOPWORDS
 import matplotlib.pyplot as plt
 from keybert import KeyBERT
 from deep_translator import GoogleTranslator
@@ -14,6 +14,8 @@ import networkx as nx
 import plotly.graph_objects as go
 import io
 import bibtexparser
+from nltk.corpus import stopwords
+
 
 # ================== CONFIG ==================
 st.set_page_config(page_title="LitReviewAI", page_icon="📚", layout="wide")
@@ -57,7 +59,6 @@ def generate_limitations_and_future(summary):
     # For simplicity we reuse summarizer as a text generator
     return summarizer(prompt, max_length=150, min_length=50, do_sample=False)[0]['summary_text']
 
-from nltk.corpus import stopwords
 
 # Download NLTK stopwords if not already
 import nltk
@@ -88,8 +89,20 @@ def lda_topic_modeling(papers):
 
 # ========== WORDCLOUD ==========
 def generate_wordcloud(papers):
-    text = " ".join([p["abstract"] for p in papers if p["abstract"]])
-    wc = WordCloud(width=800, height=400, stopwords=STOPWORDS).generate(text)
+   text = " ".join([p["abstract"] for p in papers if p["abstract"]])
+    
+    # Merge NLTK + WordCloud stopwords
+    stop_words = set(stopwords.words("english"))
+    custom_stopwords = set(STOPWORDS).union(stop_words)
+    
+    wc = WordCloud(
+        width=800,
+        height=400,
+        stopwords=custom_stopwords,
+        background_color="white",
+        colormap="viridis"
+    ).generate(text)
+
     fig, ax = plt.subplots()
     ax.imshow(wc, interpolation="bilinear")
     ax.axis("off")
