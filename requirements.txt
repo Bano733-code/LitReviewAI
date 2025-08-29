@@ -11,3 +11,4 @@ pymupdf   # <-- correct package name
 networkx
 plotly
 bibtexparser
+nltk
