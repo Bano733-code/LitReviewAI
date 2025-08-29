@@ -126,7 +126,9 @@ with tabs[0]:
             meta = extract_metadata(text)
             meta["summary"] = summarize_text(meta["abstract"])
             meta["limitations"] = generate_limitations_and_future(meta["summary"])
-            meta["keywords"] = kw_model.extract_keywords(meta["abstract"], top_n=5)
+            # Extract only keywords, not scores, and join into string
+            keywords = kw_model.extract_keywords(meta["abstract"], top_n=5)
+            meta["keywords"] = ", ".join([kw[0] for kw in keywords]) if keywords else ""
             meta["authors"] = ["Author A", "Author B"]  # Dummy authors
             st.session_state.papers.append(meta)
         st.success("Papers processed and added!")
@@ -135,7 +137,7 @@ with tabs[0]:
 with tabs[1]:
     st.header("Paper Summaries")
     if st.session_state.papers:
-        df = pd.DataFrame(st.session_state.papers)
+        df = pd.DataFrame(st.session_state.papers).astype(str)
         st.dataframe(df[["title", "summary", "limitations", "keywords"]])
         st.download_button("Download CSV", df.to_csv().encode("utf-8"), "summaries.csv")
         st.download_button("Download JSON", df.to_json(indent=2).encode("utf-8"), "summaries.json")
