@@ -137,6 +137,13 @@ with tabs[0]:
 with tabs[1]:
     st.header("Paper Summaries")
     if st.session_state.papers:
+        for i, paper in enumerate(st.session_state.papers, start=1):
+            with st.expander(f"📄 {i}. {paper.get('title', 'Untitled')}"):
+                st.markdown(f"**Summary:** {paper.get('summary', 'N/A')}")
+                st.markdown(f"**Limitations:** {paper.get('limitations', 'N/A')}")
+                st.markdown(f"**Keywords:** {', '.join(paper.get('keywords', [])) if isinstance(paper.get('keywords'), list) else paper.get('keywords', 'N/A')}")
+    
+    if st.session_state.papers:
         df = pd.DataFrame(st.session_state.papers).astype(str)
         st.dataframe(df[["title", "summary", "limitations", "keywords"]])
         st.download_button("Download CSV", df.to_csv().encode("utf-8"), "summaries.csv")
