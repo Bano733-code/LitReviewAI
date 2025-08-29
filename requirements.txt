@@ -12,3 +12,4 @@ networkx
 plotly
 bibtexparser
 nltk
+groq
