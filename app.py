@@ -176,8 +176,8 @@ def export_bibtex(papers):
     return bibtexparser.dumps(db)
 
 # ================== TABS ==================
-tabs = st.tabs(["ℹ️ About", "📑 Paper Summaries", "📊 Topic Modeling",
-                "📂 Collections", "⚡ Trends & Insights", "📤 Upload Papers"])
+tabs = st.tabs(["ℹ️ About","📤 Upload Papers", "📑 Paper Summaries", "📊 Topic Modeling",
+                "📂 Collections", "⚡ Trends & Insights"])
 
 # --- About ---
 with tabs[0]:
