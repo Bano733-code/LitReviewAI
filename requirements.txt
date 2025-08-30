@@ -1,0 +1,13 @@
+streamlit
+pandas
+gensim
+wordcloud
+matplotlib
+keybert
+deep-translator
+pymupdf   # <-- correct package name
+networkx
+plotly
+bibtexparser
+nltk
+groq
