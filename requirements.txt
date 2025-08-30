@@ -1,7 +1,5 @@
 streamlit
 pandas
-transformers
-torch
 gensim
 wordcloud
 matplotlib
