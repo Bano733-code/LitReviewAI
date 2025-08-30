@@ -176,11 +176,25 @@ def export_bibtex(papers):
     return bibtexparser.dumps(db)
 
 # ================== TABS ==================
-tabs = st.tabs(["📤 Upload Papers", "📑 Paper Summaries", "📊 Topic Modeling",
-                "📂 Collections", "⚡ Trends & Insights", "ℹ️ About"])
+tabs = st.tabs(["ℹ️ About", "📑 Paper Summaries", "📊 Topic Modeling",
+                "📂 Collections", "⚡ Trends & Insights", "📤 Upload Papers"])
+
+# --- About ---
+with tabs[0]:
+    st.header("About LitReviewAI")
+    st.write("""
+    **LitReviewAI** helps researchers save time by:
+    - Uploading papers
+    - Extracting abstracts and keywords
+    - Generating AI-powered summaries, limitations, and future directions
+    - Clustering papers into research themes
+    - Building collections for projects
+    - Exploring collaboration networks
+    """)
+
 
 # --- Upload ---
-with tabs[0]:
+with tabs[1]:
     st.header("Upload PDFs")
     uploaded_files = st.file_uploader("Upload research papers (PDF)", type="pdf", accept_multiple_files=True)
     if uploaded_files:
@@ -198,7 +212,7 @@ with tabs[0]:
         st.success("Papers processed and added!")
 
 # --- Summaries ---
-with tabs[1]:
+with tabs[2]:
     st.header("Paper Summaries")
     if st.session_state.papers:
         for i, paper in enumerate(st.session_state.papers, start=1):
@@ -217,7 +231,7 @@ with tabs[1]:
         st.info("Upload papers first.")
 
 # --- Topic Modeling ---
-with tabs[2]:
+with tabs[3]:
     st.header("Topic Modeling & Word Cloud")
     if st.session_state.papers:
         topics_df = lda_topic_modeling(st.session_state.papers)
@@ -227,7 +241,7 @@ with tabs[2]:
         st.info("Upload papers first.")
 
 # --- Collections ---
-with tabs[3]:
+with tabs[4]:
     st.header("Collections")
     if st.session_state.papers:
         collection_name = st.text_input("Collection name")
@@ -240,22 +254,9 @@ with tabs[3]:
         st.info("Upload papers first.")
 
 # --- Trends & Insights ---
-with tabs[4]:
+with tabs[5]:
     st.header("Trends & Insights")
     if st.session_state.papers:
         build_coauthor_graph(st.session_state.papers)
     else:
         st.info("Upload papers first.")
-
-# --- About ---
-with tabs[5]:
-    st.header("About LitReviewAI")
-    st.write("""
-    **LitReviewAI** helps researchers save time by:
-    - Uploading papers
-    - Extracting abstracts and keywords
-    - Generating AI-powered summaries, limitations, and future directions
-    - Clustering papers into research themes
-    - Building collections for projects
-    - Exploring collaboration networks
-    """)
