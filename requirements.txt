@@ -11,3 +11,4 @@ plotly
 bibtexparser
 nltk
 groq
+sentence-transformers
