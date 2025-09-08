@@ -6,7 +6,7 @@ import fitz  # PyMuPDF for PDF parsing
 from gensim import corpora, models
 from gensim.utils import simple_preprocess
 from wordcloud import WordCloud,STOPWORDS
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt 
 from keybert import KeyBERT
 from deep_translator import GoogleTranslator
 import networkx as nx
@@ -23,7 +23,9 @@ st.set_page_config(page_title="LitReviewAI", page_icon="📚", layout="wide")
 st.title("📚 LitReviewAI: Automated Research Paper Reviewer")
 
 # ================== GLOBALS ==================
-kw_model = KeyBERT()
+from sentence_transformers import SentenceTransformer
+embedding_model = SentenceTransformer("all-MiniLM-L6-v2", device="cpu")  
+kw_model = KeyBERT(model=embedding_model)
 
 if "papers" not in st.session_state:
     st.session_state.papers = []  # store metadata & results
@@ -71,9 +73,9 @@ def extract_metadata(text):
 
 # ---- SUMMARIZATION ----
 def get_summary(text):
-    prompt = f"Summarize the key contributions and findings of this abstract in 2–3 sentences:\n\n{text}"
+    prompt = f"Summarize the key contributions and findings of this abstract in normal number of lines not so long or short sentences just give me summary That makes understanding in the mind of reader:\n\n{text}"
     response = client.chat.completions.create(
-        model="llama3-8b-8192",
+        model="llama-3.1-8b-instant",
         messages=[{"role": "user", "content": prompt}]
     )
     return response.choices[0].message.content.strip()
@@ -82,7 +84,7 @@ def get_summary(text):
 def get_limitations(text):
     prompt = f"Extract only the limitations or challenges discussed in this abstract (if any). If none, write 'No explicit limitations mentioned'.\n\n{text}"
     response = client.chat.completions.create(
-        model="llama3-8b-8192",
+        model="llama-3.1-8b-instant",
         messages=[{"role": "user", "content": prompt}]
     )
     return response.choices[0].message.content.strip()
@@ -176,8 +178,8 @@ def export_bibtex(papers):
     return bibtexparser.dumps(db)
 
 # ================== TABS ==================
-tabs = st.tabs(["ℹ️ About","📤 Upload Papers", "📑 Paper Summaries", "📊 Topic Modeling",
-                "📂 Collections", "⚡ Trends & Insights"])
+tabs = st.tabs(["ℹ️ About","📤 Upload Papers","📑 Paper Summaries", 
+                "📊 Topic Modeling","📂 Collections", "⚡ Trends & Insights"])
 
 # --- About ---
 with tabs[0]:
@@ -260,3 +262,4 @@ with tabs[5]:
         build_coauthor_graph(st.session_state.papers)
     else:
         st.info("Upload papers first.")
+
