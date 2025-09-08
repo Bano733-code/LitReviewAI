@@ -6,7 +6,7 @@ import fitz  # PyMuPDF for PDF parsing
 from gensim import corpora, models
 from gensim.utils import simple_preprocess
 from wordcloud import WordCloud,STOPWORDS
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt 
 from keybert import KeyBERT
 from deep_translator import GoogleTranslator
 import networkx as nx
