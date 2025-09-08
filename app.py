@@ -23,7 +23,9 @@ st.set_page_config(page_title="LitReviewAI", page_icon="📚", layout="wide")
 st.title("📚 LitReviewAI: Automated Research Paper Reviewer")
 
 # ================== GLOBALS ==================
-kw_model = KeyBERT()
+from sentence_transformers import SentenceTransformer
+embedding_model = SentenceTransformer("all-MiniLM-L6-v2", device="cpu")  
+kw_model = KeyBERT(model=embedding_model)
 
 if "papers" not in st.session_state:
     st.session_state.papers = []  # store metadata & results
@@ -71,7 +73,7 @@ def extract_metadata(text):
 
 # ---- SUMMARIZATION ----
 def get_summary(text):
-    prompt = f"Summarize the key contributions and findings of this abstract in 2–3 sentences:\n\n{text}"
+    prompt = f"Summarize the key contributions and findings of this abstract in normal number of lines not so long or short sentences just give me summary That makes understanding in the mind of reader:\n\n{text}"
     response = client.chat.completions.create(
         model="llama-3.1-8b-instant",
         messages=[{"role": "user", "content": prompt}]
