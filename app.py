@@ -73,7 +73,7 @@ def extract_metadata(text):
 def get_summary(text):
     prompt = f"Summarize the key contributions and findings of this abstract in 2–3 sentences:\n\n{text}"
     response = client.chat.completions.create(
-        model="llama3-8b-8192",
+        model="llama-3.1-8b-instant",
         messages=[{"role": "user", "content": prompt}]
     )
     return response.choices[0].message.content.strip()
@@ -82,7 +82,7 @@ def get_summary(text):
 def get_limitations(text):
     prompt = f"Extract only the limitations or challenges discussed in this abstract (if any). If none, write 'No explicit limitations mentioned'.\n\n{text}"
     response = client.chat.completions.create(
-        model="llama3-8b-8192",
+        model="llama-3.1-8b-instant",
         messages=[{"role": "user", "content": prompt}]
     )
     return response.choices[0].message.content.strip()
