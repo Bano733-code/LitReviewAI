@@ -95,16 +95,41 @@ def extract_authors_from_pdf(pdf_file):
     return authors
 
 
+
 def extract_metadata(text):
-    # Very naive metadata extractor (replace with actual if needed)
-    lines = text.split("\n")
-    title = lines[0] if lines else "Untitled"
-    abstract = ""
-    for i, l in enumerate(lines):
-        if "abstract" in l.lower():
-            abstract = " ".join(lines[i+1:i+10])
+    lines = [l.strip() for l in text.split("\n") if l.strip()]  # remove empty lines
+    
+    # -------- Title detection --------
+    # Usually title is the first big line before "abstract"/"resumen"/"introduction"
+    title = "Untitled"
+    for i, l in enumerate(lines[:10]):  # check first 10 lines
+        if len(l.split()) > 4 and l.isupper() == False:  # heuristic: title has 5+ words
+            title = l
             break
+    
+    # -------- Abstract detection --------
+    abstract = ""
+    abstract_start = -1
+    
+    # Look for different keywords (English, Spanish, French etc.)
+    abstract_keywords = ["abstract", "résumé", "resumen", "summary", "introduction"]
+    
+    for i, l in enumerate(lines):
+        if any(kw in l.lower() for kw in abstract_keywords):
+            abstract_start = i
+            break
+    
+    if abstract_start != -1:
+        # Collect lines until a stopping point (like keywords, intro, references)
+        abstract_lines = []
+        for l in lines[abstract_start+1:]:
+            if re.match(r"(?i)(keywords?|introduction|methods?|materials|references)", l):
+                break
+            abstract_lines.append(l)
+        abstract = " ".join(abstract_lines)
+    
     return {"title": title, "abstract": abstract}
+
 
 # ---- SUMMARIZATION ----
 def get_summary(text):
