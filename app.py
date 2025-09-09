@@ -48,7 +48,7 @@ def extract_authors_from_pdf(pdf_file):
     lines = first_page_text.split("\n")
     authors = []
 
-    for line in lines[1:50]:  # scan first 15 lines after title
+    for line in lines[1:15]:  # scan first 15 lines after title
         if "abstract" in line.lower():
             break
         # avoid very long lines (likely affiliations)
@@ -67,7 +67,7 @@ def extract_metadata(text):
     abstract = ""
     for i, l in enumerate(lines):
         if "abstract" in l.lower():
-            abstract = " ".join(lines[i+1:i+10])
+            abstract = " ".join(lines[i+1:i+30])
             break
     return {"title": title, "abstract": abstract}
 
