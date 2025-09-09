@@ -33,32 +33,67 @@ if "collections" not in st.session_state:
     st.session_state.collections = {}
 
 # ================== HELPERS ==================
-def extract_text_from_pdf(pdf_file):
-    doc = fitz.open(stream=pdf_file.read(), filetype="pdf")
-    text = ""
-    for page in doc:
-        text += page.get_text()
-    return text
-def extract_authors_from_pdf(pdf_file):
-    doc = fitz.open(stream=pdf_file.read(), filetype="pdf")
-    first_page_text = doc[0].get_text("text")
+# ================== HELPERS ==================
+import re
 
-    # simple heuristic: authors are usually after title but before abstract
-    lines = first_page_text.split("\n")
+def extract_text_from_pdf(pdf_file):
+    """
+    Extracts all text from a PDF file.
+    Handles file pointer reset and ensures doc is closed.
+    """
+    data = pdf_file.read()
+    pdf_file.seek(0)  # reset pointer so file can be reused
+    text = ""
+
+    with fitz.open(stream=data, filetype="pdf") as doc:
+        if len(doc) == 0:
+            return ""  # empty or corrupted PDF
+        for page in doc:
+            text += page.get_text()
+    return text
+
+
+def extract_authors_from_pdf(pdf_file):
+    """
+    Extracts author names from the first page of a PDF.
+    Uses metadata + heuristics + regex for better accuracy.
+    """
+    data = pdf_file.read()
+    pdf_file.seek(0)  # reset pointer
     authors = []
 
-    for line in lines[1:15]:  # scan first 15 lines after title
-        if "abstract" in line.lower():
-            break
-        # avoid very long lines (likely affiliations)
-        if 2 <= len(line.split()) <= 8:
-            authors.append(line.strip())
+    with fitz.open(stream=data, filetype="pdf") as doc:
+        if len(doc) == 0:
+            return ["Unknown"]
 
-    # fallback if nothing found
-    if not authors:
-        authors = ["Unknown"]
+        meta = doc.metadata or {}
+        # --- 1. Try PDF metadata ---
+        if meta.get("author"):
+            authors = [a.strip() for a in re.split(r"[;,]", meta["author"]) if a.strip()]
+
+        # --- 2. Try heuristics on first page ---
+        if not authors:
+            first_page_text = doc[0].get_text("text")
+            lines = [ln.strip() for ln in first_page_text.split("\n") if ln.strip()]
+
+            for line in lines[1:20]:  # skip title, check next few lines
+                if "abstract" in line.lower():
+                    break
+                # rule: short lines (2–8 words), some capitalization
+                words = line.split()
+                if 2 <= len(words) <= 8 and any(w[0].isupper() for w in words if w):
+                    # avoid affiliations
+                    if not any(kw in line.lower() for kw in ["university", "institute", "department"]):
+                        # regex check: looks like a name pattern
+                        if re.match(r"^[A-Z][a-z]+(\s[A-Z]\.?\s?[A-Z][a-z]+)?", line):
+                            authors.append(line)
+
+        # --- 3. Fallback ---
+        if not authors:
+            authors = ["Unknown"]
 
     return authors
+
 
 def extract_metadata(text):
     # Very naive metadata extractor (replace with actual if needed)
