@@ -33,101 +33,42 @@ if "collections" not in st.session_state:
     st.session_state.collections = {}
 
 # ================== HELPERS ==================
-# ================== HELPERS ==================
-import re
-
 def extract_text_from_pdf(pdf_file):
-    """
-    Extracts all text from a PDF file.
-    Handles file pointer reset and ensures doc is closed.
-    """
-    data = pdf_file.read()
-    pdf_file.seek(0)  # reset pointer so file can be reused
+    doc = fitz.open(stream=pdf_file.read(), filetype="pdf")
     text = ""
-
-    with fitz.open(stream=data, filetype="pdf") as doc:
-        if len(doc) == 0:
-            return ""  # empty or corrupted PDF
-        for page in doc:
-            text += page.get_text()
+    for page in doc:
+        text += page.get_text()
     return text
-
-
+    
 def extract_authors_from_pdf(pdf_file):
-    """
-    Extracts author names from the first page of a PDF.
-    Uses metadata + heuristics + regex for better accuracy.
-    """
-    data = pdf_file.read()
-    pdf_file.seek(0)  # reset pointer
+    doc = fitz.open(stream=pdf_file.read(), filetype="pdf")
+    first_page_text = doc[0].get_text("text")
+
+    # simple heuristic: authors are usually after title but before abstract
+    lines = first_page_text.split("\n")
     authors = []
 
-    with fitz.open(stream=data, filetype="pdf") as doc:
-        if len(doc) == 0:
-            return ["Unknown"]
+    for line in lines[1:15]:  # scan first 15 lines after title
+        if "abstract" in line.lower():
+            break
+        # avoid very long lines (likely affiliations)
+        if 2 <= len(line.split()) <= 8:
+            authors.append(line.strip())
 
-        meta = doc.metadata or {}
-        # --- 1. Try PDF metadata ---
-        if meta.get("author"):
-            authors = [a.strip() for a in re.split(r"[;,]", meta["author"]) if a.strip()]
-
-        # --- 2. Try heuristics on first page ---
-        if not authors:
-            first_page_text = doc[0].get_text("text")
-            lines = [ln.strip() for ln in first_page_text.split("\n") if ln.strip()]
-
-            for line in lines[1:20]:  # skip title, check next few lines
-                if "abstract" in line.lower():
-                    break
-                # rule: short lines (2–8 words), some capitalization
-                words = line.split()
-                if 2 <= len(words) <= 8 and any(w[0].isupper() for w in words if w):
-                    # avoid affiliations
-                    if not any(kw in line.lower() for kw in ["university", "institute", "department"]):
-                        # regex check: looks like a name pattern
-                        if re.match(r"^[A-Z][a-z]+(\s[A-Z]\.?\s?[A-Z][a-z]+)?", line):
-                            authors.append(line)
-
-        # --- 3. Fallback ---
-        if not authors:
-            authors = ["Unknown"]
+    # fallback if nothing found
+    if not authors:
+        authors = ["Unknown"]
 
     return authors
-
-
-
 def extract_metadata(text):
-    lines = [l.strip() for l in text.split("\n") if l.strip()]  # remove empty lines
-    
-    # -------- Title detection --------
-    # Usually title is the first big line before "abstract"/"resumen"/"introduction"
-    title = "Untitled"
-    for i, l in enumerate(lines[:10]):  # check first 10 lines
-        if len(l.split()) > 4 and l.isupper() == False:  # heuristic: title has 5+ words
-            title = l
-            break
-    
-    # -------- Abstract detection --------
+    # Very naive metadata extractor (replace with actual if needed)
+    lines = text.split("\n")
+    title = lines[0] if lines else "Untitled"
     abstract = ""
-    abstract_start = -1
-    
-    # Look for different keywords (English, Spanish, French etc.)
-    abstract_keywords = ["abstract", "résumé", "resumen", "summary", "introduction"]
-    
     for i, l in enumerate(lines):
-        if any(kw in l.lower() for kw in abstract_keywords):
-            abstract_start = i
+        if "abstract" in l.lower():
+            abstract = " ".join(lines[i+1:i+10])
             break
-    
-    if abstract_start != -1:
-        # Collect lines until a stopping point (like keywords, intro, references)
-        abstract_lines = []
-        for l in lines[abstract_start+1:]:
-            if re.match(r"(?i)(keywords?|introduction|methods?|materials|references)", l):
-                break
-            abstract_lines.append(l)
-        abstract = " ".join(abstract_lines)
-    
     return {"title": title, "abstract": abstract}
 
 
