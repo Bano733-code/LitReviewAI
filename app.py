@@ -16,7 +16,7 @@ import bibtexparser
 from nltk.corpus import stopwords
 from groq import Groq
 client = Groq(api_key=st.secrets["GROQ_API_KEY"])
-
+import re
 
 # ================== CONFIG ==================
 st.set_page_config(page_title="LitReviewAI", page_icon="📚", layout="wide")
@@ -32,45 +32,69 @@ if "papers" not in st.session_state:
 if "collections" not in st.session_state:
     st.session_state.collections = {}
 
+
 # ================== HELPERS ==================
 def extract_text_from_pdf(pdf_file):
+    """Extract all text from PDF."""
     doc = fitz.open(stream=pdf_file.read(), filetype="pdf")
     text = ""
     for page in doc:
-        text += page.get_text()
+        text += page.get_text("text")
     return text
-    
-def extract_authors_from_pdf(pdf_file):
-    doc = fitz.open(stream=pdf_file.read(), filetype="pdf")
-    first_page_text = doc[0].get_text("text")
 
-    # simple heuristic: authors are usually after title but before abstract
-    lines = first_page_text.split("\n")
-    authors = []
 
-    for line in lines[1:15]:  # scan first 15 lines after title
-        if "abstract" in line.lower():
-            break
-        # avoid very long lines (likely affiliations)
-        if 2 <= len(line.split()) <= 8:
-            authors.append(line.strip())
+def extract_title(text):
+    """Heuristic: choose first non-empty, reasonably long line as title."""
+    lines = [l.strip() for l in text.split("\n") if l.strip()]
+    skip_words = ["journal", "doi", "copyright", "arxiv", "volume"]
+    for line in lines[:20]:
+        if len(line.split()) >= 5 and not any(w in line.lower() for w in skip_words):
+            return line
+    return "Untitled"
 
-    # fallback if nothing found
-    if not authors:
-        authors = ["Unknown"]
 
-    return authors
-def extract_metadata(text):
-    # Very naive metadata extractor (replace with actual if needed)
+def extract_authors(text):
+    """Heuristic: detect names between title and abstract/keywords."""
     lines = text.split("\n")
-    title = lines[0] if lines else "Untitled"
-    abstract = ""
-    for i, l in enumerate(lines):
-        if "abstract" in l.lower():
-            abstract = " ".join(lines[i+1:i+30])
-            break
-    return {"title": title, "abstract": abstract}
+    authors = []
+    found_title = False
+    for line in lines:
+        line = line.strip()
+        if not found_title and len(line.split()) >= 5:
+            found_title = True
+            continue
+        if found_title:
+            if "abstract" in line.lower() or "keywords" in line.lower():
+                break
+            if re.match(r"^[A-Z][a-z]+(\s[A-Z]\.)?(\s[A-Z][a-z]+)+$", line):
+                authors.append(line)
+    return authors if authors else ["Unknown"]
 
+
+def extract_abstract(text):
+    """Extract abstract block (multiple formats supported)."""
+    lines = text.split("\n")
+    abstract = []
+    capture = False
+    for line in lines:
+        l = line.lower().strip()
+        if any(word in l for word in ["abstract", "summary", "overview", "resumen"]):
+            capture = True
+            continue
+        if capture:
+            if re.match(r"^(introduction|keywords|1\.)", l):
+                break
+            abstract.append(line.strip())
+    return " ".join(abstract).strip()
+
+
+def extract_metadata(pdf_file):
+    """Extract title, authors, abstract from PDF."""
+    text = extract_text_from_pdf(pdf_file)
+    title = extract_title(text)
+    authors = extract_authors(text)
+    abstract = extract_abstract(text)
+    return {"title": title, "authors": authors, "abstract": abstract}
 
 # ---- SUMMARIZATION ----
 def get_summary(text):
@@ -79,7 +103,7 @@ def get_summary(text):
 
     Task:
     - Write a clear and concise summary of the abstract below.
-    - Use 5–15 sentences.
+    - Use 5–10 sentences.
     - Focus only on the key contributions, methods, and findings.
     - Avoid repetition or generic statements.
     - Make sure it is easy to understand for a student or researcher.
@@ -214,10 +238,8 @@ with tabs[1]:
     uploaded_files = st.file_uploader("Upload research papers (PDF)", type="pdf", accept_multiple_files=True)
     if uploaded_files:
         for file in uploaded_files:
-            text = extract_text_from_pdf(file)
-            meta = extract_metadata(text)
             file.seek(0)  # reset pointer because we already read it
-            meta["authors"] = extract_authors_from_pdf(file)
+            meta = extract_metadata(text)
             meta["summary"] = get_summary(meta["abstract"])
             meta["limitations"] = get_limitations(meta["abstract"])
             # Extract only keywords, not scores, and join into string
