@@ -48,7 +48,7 @@ def extract_authors_from_pdf(pdf_file):
     lines = first_page_text.split("\n")
     authors = []
 
-    for line in lines[1:15]:  # scan first 15 lines after title
+    for line in lines[1:50]:  # scan first 15 lines after title
         if "abstract" in line.lower():
             break
         # avoid very long lines (likely affiliations)
@@ -74,7 +74,19 @@ def extract_metadata(text):
 
 # ---- SUMMARIZATION ----
 def get_summary(text):
-    prompt = f"Summarize the key contributions and findings of this abstract in normal number of lines not so long or short sentences just give me summary That makes understanding in the mind of reader:\n\n{text}"
+    prompt=f"""
+    You are an assistant that summarizes research abstracts.
+
+    Task:
+    - Write a clear and concise summary of the abstract below.
+    - Use 5–15 sentences.
+    - Focus only on the key contributions, methods, and findings.
+    - Avoid repetition or generic statements.
+    - Make sure it is easy to understand for a student or researcher.
+
+    Abstract:
+    {text}
+    """
     response = client.chat.completions.create(
         model="llama-3.1-8b-instant",
         messages=[{"role": "user", "content": prompt}]
