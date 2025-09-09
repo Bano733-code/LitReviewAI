@@ -239,7 +239,7 @@ with tabs[1]:
     if uploaded_files:
         for file in uploaded_files:
             file.seek(0)  # reset pointer because we already read it
-            meta = extract_metadata(text)
+            meta = extract_metadata(file)
             meta["summary"] = get_summary(meta["abstract"])
             meta["limitations"] = get_limitations(meta["abstract"])
             # Extract only keywords, not scores, and join into string
