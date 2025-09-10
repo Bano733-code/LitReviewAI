@@ -52,22 +52,36 @@ def extract_title(text):
             return line
     return "Untitled"
 
-
 def extract_authors(text):
-    """Heuristic: detect names between title and abstract/keywords."""
+    """Detect author names between title and abstract/keywords."""
     lines = text.split("\n")
     authors = []
     found_title = False
+    
     for line in lines:
         line = line.strip()
+        # Step 1: title detect karo
         if not found_title and len(line.split()) >= 5:
             found_title = True
             continue
+        
+        # Step 2: Stop at abstract/keywords
         if found_title:
             if "abstract" in line.lower() or "keywords" in line.lower():
                 break
-            if re.match(r"^[A-Z][a-z]+(\s[A-Z]\.)?(\s[A-Z][a-z]+)+$", line):
-                authors.append(line)
+
+            # Step 3: Agar line me multiple authors hain
+            if "," in line or " and " in line.lower():
+                parts = re.split(",| and ", line)
+                for name in parts:
+                    name = name.strip()
+                    if re.match(r"^[A-Z][a-z]+(\s[A-Z]\.?\s?[A-Z][a-z]+)?$", name):
+                        authors.append(name)
+            else:
+                # single name line
+                if re.match(r"^[A-Z][a-z]+(\s[A-Z]\.?\s?[A-Z][a-z]+)?$", line):
+                    authors.append(line)
+    
     return authors if authors else ["Unknown"]
 
 
@@ -177,29 +191,45 @@ def generate_wordcloud(papers):
 
 def build_coauthor_graph(papers):
     G = nx.Graph()
+    
     for p in papers:
         authors = p.get("authors", ["Unknown"])
+        
+        # Ensure every author at least ek node ban jaye
+        for a in authors:
+            G.add_node(a)
+        
+        # Edges sirf jab ≥2 authors ho
         for i in range(len(authors)):
             for j in range(i+1, len(authors)):
                 G.add_edge(authors[i], authors[j])
-    pos = nx.spring_layout(G)
+
+    if len(G.nodes) == 0:
+        st.warning("No author data found.")
+        return
+
+    pos = nx.spring_layout(G, seed=42)
     edge_x, edge_y, node_x, node_y, text = [], [], [], [], []
+    
     for edge in G.edges():
         x0, y0 = pos[edge[0]]
         x1, y1 = pos[edge[1]]
         edge_x.extend([x0, x1, None])
         edge_y.extend([y0, y1, None])
+    
     for node in G.nodes():
         x, y = pos[node]
         node_x.append(x); node_y.append(y)
         text.append(node)
+    
     fig = go.Figure()
-    fig.add_trace(go.Scatter(x=edge_x, y=edge_y, line=dict(width=0.5,color='#888'),
+    fig.add_trace(go.Scatter(x=edge_x, y=edge_y,
+                             line=dict(width=0.5, color='#888'),
                              hoverinfo='none', mode='lines'))
     fig.add_trace(go.Scatter(x=node_x, y=node_y, mode='markers+text',
                              text=text, textposition="top center",
-                             marker=dict(size=10, color='skyblue')))
-    st.plotly_chart(fig)
+                             marker=dict(size=12, color='skyblue')))
+    st.plotly_chart(fig, use_container_width=True)
 
 def export_bibtex(papers):
     db = {"entries": []}
