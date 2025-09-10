@@ -43,41 +43,47 @@ def extract_text_from_pdf(pdf_file):
     return text
 
 def extract_title(text):
-    """Improved title extractor for research papers."""
+    """Extracts paper title (before Abstract), avoiding citations and irrelevant headers."""
     lines = [l.strip() for l in text.split("\n") if l.strip()]
     
-    skip_words = [
-        "journal", "doi", "copyright", "arxiv", "volume", "issue",
-        "abstract", "introduction", "methods", "open access", "citation",
-        "conference", "proceedings", "authors", "received", "accepted"
-    ]
+    # Find index of "Abstract" (case-insensitive)
+    abs_index = None
+    for i, line in enumerate(lines):
+        if line.lower().startswith("abstract"):
+            abs_index = i
+            break
+    
+    # Agar Abstract mil gaya to uske pehle ki lines hi check karni hain
+    if abs_index:
+        candidate_lines = lines[:abs_index]
+    else:
+        candidate_lines = lines[:50]  # fallback
+    
+    skip_words = ["journal", "doi", "copyright", "arxiv", "volume", 
+                  "methods", "open access", "citation"]
     
     candidates = []
-    for line in lines[:100]:  # scan top 100 lines instead of 50
+    for line in candidate_lines:
         low = line.lower()
         
-        # skip if contains skip words
+        # Skip unwanted lines
         if any(w in low for w in skip_words):
             continue
-        
-        # skip if looks like author list (e.g., has many commas or emails)
-        if re.search(r"[@]", line) or (line.count(",") > 3 and len(line.split()) < 15):
+        if re.match(r"^[A-Z][a-z]+(\s[A-Z]\.)+,", line):  # looks like author list
+            continue
+        if re.search(r"\(\d{4}\)", line):  # looks like citation
             continue
         
-        # skip if looks like citation with year
-        if re.search(r"\(\d{4}\)", line) or re.search(r"\d{4}", line):
-            continue
-        
-        # candidate titles must be at least 5 words and not too long
-        if 5 <= len(line.split()) <= 25:
+        # Consider as candidate if long enough
+        if len(line.split()) >= 5:
             candidates.append(line)
     
-    # Prefer titles with colon or question mark
+    # Prefer line with colon
     for line in candidates:
-        if ":" in line or "?" in line:
+        if ":" in line:
             return line
     
-    # Otherwise pick the longest candidate (common heuristic)
+    # Otherwise, fallback = longest candidate
     if candidates:
         return max(candidates, key=len)
     
