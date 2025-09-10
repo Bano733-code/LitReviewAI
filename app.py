@@ -60,28 +60,26 @@ def extract_authors(text):
     
     for line in lines:
         line = line.strip()
-        # Step 1: title detect karo
         if not found_title and len(line.split()) >= 5:
             found_title = True
             continue
-        
-        # Step 2: Stop at abstract/keywords
+
         if found_title:
             if "abstract" in line.lower() or "keywords" in line.lower():
                 break
 
-            # Step 3: Agar line me multiple authors hain
+            # Multiple authors separated by comma / and
             if "," in line or " and " in line.lower():
                 parts = re.split(",| and ", line)
                 for name in parts:
                     name = name.strip()
-                    if re.match(r"^[A-Z][a-z]+(\s[A-Z]\.?\s?[A-Z][a-z]+)?$", name):
+                    # Allow First Last or First M. Last
+                    if re.match(r"^[A-Z][a-z]+(\s[A-Z]\.)?\s[A-Z][a-z]+$", name):
                         authors.append(name)
             else:
-                # single name line
-                if re.match(r"^[A-Z][a-z]+(\s[A-Z]\.?\s?[A-Z][a-z]+)?$", line):
+                if re.match(r"^[A-Z][a-z]+(\s[A-Z]\.)?\s[A-Z][a-z]+$", line):
                     authors.append(line)
-    
+
     return authors if authors else ["Unknown"]
 
 
