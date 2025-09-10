@@ -43,37 +43,41 @@ def extract_text_from_pdf(pdf_file):
     return text
 
 def extract_title(text):
-    """Extracts paper title, avoiding citations and irrelevant headers."""
+    """Improved title extractor for research papers."""
     lines = [l.strip() for l in text.split("\n") if l.strip()]
-    skip_words = ["journal", "doi", "copyright", "arxiv", "volume", 
-                  "abstract", "introduction","Methods", "open access", "citation"]
+    
+    skip_words = [
+        "journal", "doi", "copyright", "arxiv", "volume", "issue",
+        "abstract", "introduction", "methods", "open access", "citation",
+        "conference", "proceedings", "authors", "received", "accepted"
+    ]
     
     candidates = []
-    for line in lines[:50]:  # scan top 50 lines
+    for line in lines[:100]:  # scan top 100 lines instead of 50
         low = line.lower()
         
-        # Skip if contains skip words
+        # skip if contains skip words
         if any(w in low for w in skip_words):
             continue
         
-        # Skip if looks like author list (e.g., starts with "Lastname" and a comma)
-        if re.match(r"^[A-Z][a-z]+(\s[A-Z]\.)+,", line):
+        # skip if looks like author list (e.g., has many commas or emails)
+        if re.search(r"[@]", line) or (line.count(",") > 3 and len(line.split()) < 15):
             continue
         
-        # Skip if looks like citation with year
-        #if re.search(r"\(\d{4}\)", line):
-         #   continue
+        # skip if looks like citation with year
+        if re.search(r"\(\d{4}\)", line) or re.search(r"\d{4}", line):
+            continue
         
-        # Title candidates must be at least 5 words
-        if len(line.split()) >= 5:
+        # candidate titles must be at least 5 words and not too long
+        if 5 <= len(line.split()) <= 25:
             candidates.append(line)
     
-    # Prefer titles with colon (:), since common in scientific papers
+    # Prefer titles with colon or question mark
     for line in candidates:
-        if ":" in line:
+        if ":" in line or "?" in line:
             return line
     
-    # Fallback: longest candidate line
+    # Otherwise pick the longest candidate (common heuristic)
     if candidates:
         return max(candidates, key=len)
     
