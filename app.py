@@ -42,21 +42,35 @@ def extract_text_from_pdf(pdf_file):
         text += page.get_text("text")
     return text
 
-
 def extract_title(text):
-    """Extracts title from paper text with improved heuristics."""
+    """Extracts paper title, avoiding citations and irrelevant headers."""
     lines = [l.strip() for l in text.split("\n") if l.strip()]
-    skip_words = ["journal", "doi", "copyright", "arxiv", "volume", "abstract", "introduction"]
+    skip_words = ["journal", "doi", "copyright", "arxiv", "volume", 
+                  "abstract", "introduction", "methods", "open access", "citation"]
     
-    # Candidate lines: not skipped, long enough
-    candidates = [
-        line for line in lines[:40]  # scan first 40 lines
-        if len(line.split()) >= 4 and not any(w in line.lower() for w in skip_words)
-    ]
+    candidates = []
+    for line in lines[:50]:  # scan top 50 lines
+        low = line.lower()
+        
+        # Skip if contains skip words
+        if any(w in low for w in skip_words):
+            continue
+        
+        # Skip if looks like author list (e.g., starts with "Lastname" and a comma)
+        if re.match(r"^[A-Z][a-z]+(\s[A-Z]\.)+,", line):
+            continue
+        
+        # Skip if looks like citation with year
+        if re.search(r"\(\d{4}\)", line):
+            continue
+        
+        # Title candidates must be at least 5 words
+        if len(line.split()) >= 5:
+            candidates.append(line)
     
-    # Heuristic: title often contains a colon (:) or italics in PDF extraction
+    # Prefer titles with colon (:), since common in scientific papers
     for line in candidates:
-        if ":" in line or line.istitle():
+        if ":" in line:
             return line
     
     # Fallback: longest candidate line
