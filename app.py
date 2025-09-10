@@ -44,13 +44,26 @@ def extract_text_from_pdf(pdf_file):
 
 
 def extract_title(text):
-    """Heuristic: choose first non-empty, reasonably long line as title."""
+    """Extracts title from paper text with improved heuristics."""
     lines = [l.strip() for l in text.split("\n") if l.strip()]
-    skip_words = ["journal", "doi", "copyright", "arxiv", "volume"]
-    for line in lines[:20]:
-        if len(line.split()) >= 5 and not any(w in line.lower() for w in skip_words):
+    skip_words = ["journal", "doi", "copyright", "arxiv", "volume", "abstract", "introduction"]
+    
+    # Candidate lines: not skipped, long enough
+    candidates = [
+        line for line in lines[:40]  # scan first 40 lines
+        if len(line.split()) >= 4 and not any(w in line.lower() for w in skip_words)
+    ]
+    
+    # Heuristic: title often contains a colon (:) or italics in PDF extraction
+    for line in candidates:
+        if ":" in line or line.istitle():
             return line
-    return "Untitled"
+    
+    # Fallback: longest candidate line
+    if candidates:
+        return max(candidates, key=len)
+    
+    return None
 
 def extract_authors(text):
     """Detect author names between title and abstract/keywords."""
