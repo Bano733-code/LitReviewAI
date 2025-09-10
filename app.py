@@ -46,7 +46,7 @@ def extract_title(text):
     """Extracts paper title, avoiding citations and irrelevant headers."""
     lines = [l.strip() for l in text.split("\n") if l.strip()]
     skip_words = ["journal", "doi", "copyright", "arxiv", "volume", 
-                  "abstract", "introduction", "open access", "citation"]
+                  "abstract", "introduction","Methods", "open access", "citation"]
     
     candidates = []
     for line in lines[:50]:  # scan top 50 lines
@@ -61,8 +61,8 @@ def extract_title(text):
             continue
         
         # Skip if looks like citation with year
-        if re.search(r"\(\d{4}\)", line):
-            continue
+        #if re.search(r"\(\d{4}\)", line):
+         #   continue
         
         # Title candidates must be at least 5 words
         if len(line.split()) >= 5:
