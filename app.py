@@ -418,15 +418,28 @@ with tabs[1]:
     st.header("Upload PDFs")
     uploaded_files = st.file_uploader("Upload research papers (PDF)", type="pdf", accept_multiple_files=True)
     if uploaded_files:
+        analysis_mode = st.radio(
+            "Choose Analysis Mode:",
+            ["Basic (Summary only)", "Full (Summary + Gaps + Limitations + Sections)"],
+            index=0
+        )
+
         for file in uploaded_files:
             file.seek(0)
             meta = extract_metadata(file)
-            # section-wise summary (model may be slower; optional)
             text_for_sections = extract_text_from_pdf(file)
-            meta["section_summary"] = get_section_summaries(text_for_sections)
+
             meta["summary"] = get_summary(meta.get("abstract", ""))
-            meta["limitations"] = get_limitations(meta.get("abstract", ""))
-            meta["research_gaps"] = get_research_gaps(meta.get("abstract", ""))
+
+            if analysis_mode == "Full":
+                meta["limitations"] = get_limitations(meta.get("abstract", ""))
+                meta["research_gaps"] = get_research_gaps(meta.get("abstract", ""))
+                meta["section_summary"] = get_section_summaries(text_for_sections)
+            else:
+                meta["limitations"] = "Skipped (Basic mode)"
+                meta["research_gaps"] = "Skipped (Basic mode)"
+                meta["section_summary"] = "Skipped (Basic mode)"
+
             # Extract keywords
             try:
                 keywords = kw_model.extract_keywords(meta.get("abstract", ""), top_n=5)
