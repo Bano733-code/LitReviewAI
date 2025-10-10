@@ -1,14 +1,14 @@
 streamlit
-pandas
+fitz
 gensim
 wordcloud
 matplotlib
 keybert
+nltk
 deep-translator
-pymupdf   # <-- correct package name
 networkx
 plotly
 bibtexparser
-nltk
 groq
 sentence-transformers
+torch
