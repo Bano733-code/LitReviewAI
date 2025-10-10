@@ -235,26 +235,21 @@ Abstract:
     )
     return response.choices[0].message.content.strip()
 
-def get_section_summaries(full_text):
-    """
-    Ask the model to produce short bullet summaries for major sections:
-    Introduction, Methods, Results, Conclusions (if available).
-    Uses the full text as context (could be large).
-    """
-    if not full_text:
-        return {}
-    prompt = f"""
-You are an academic assistant. Read the text of a paper and produce concise 1-3 bullet points for each of these sections if present: Introduction, Methods, Results, Conclusions/Discussion. If a section is not present, skip it. Use short bullets.
-Paper text (may be long):
-{full_text}
-"""
-    response = client.chat.completions.create(
-        model="llama-3.1-8b-instant",
-        messages=[{"role": "user", "content": prompt}],
-        # you could add streaming or other flags as needed
-    )
-    # We will simply return the raw content (user can parse if needed)
-    return response.choices[0].message.content.strip()
+def chunk_text(text, max_chars=4000):
+    """Split text into smaller parts safely for Groq API."""
+    return [text[i:i + max_chars] for i in range(0, len(text), max_chars)]
+
+def get_section_summaries(text):
+    summaries = []
+    chunks = chunk_text(text)
+    for chunk in chunks:
+        response = client.chat.completions.create(
+            model="llama-3.1-8b-instant",
+            messages=[{"role": "user", "content": f"Summarize this section:\n{chunk}"}],
+            temperature=0.3,
+        )
+        summaries.append(response.choices[0].message.content)
+    return "\n\n".join(summaries)
 
 def get_limitations(text):
     if not text:
