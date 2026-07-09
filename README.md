@@ -4,7 +4,7 @@ emoji: 💻
 colorFrom: green
 colorTo: pink
 sdk: streamlit
-sdk_version: 1.49.1
+sdk_version: 1.59.1
 app_file: app.py
 pinned: false
 short_description: 👉 “Turn PDFs into Research Insights in Seconds."
@@ -49,4 +49,4 @@ LitReviewAI is an AI-powered app that helps researchers, students, and professio
 
 ---
 
-✨ Try it now and make your research workflow smarter!  
+✨ Try it now and make your research workflow smarter!
