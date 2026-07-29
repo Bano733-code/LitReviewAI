@@ -3,7 +3,7 @@ import streamlit as st
 from components.upload import upload_section
 from components.summaries import summary_section
 from components.insights import insights_section
-
+from src.embeddings import extract_keywords
 from src.topic_modeling import lda_topic_modeling
 from src.visualizations import generate_wordcloud
 
