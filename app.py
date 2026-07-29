@@ -7,7 +7,8 @@ from components.insights import insights_section
 from src.topic_modeling import lda_topic_modeling
 from src.visualizations import generate_wordcloud
 from src.chat import chat_section
-
+from groq import Groq
+client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
 # =====================================================
 # PAGE CONFIGURATION
