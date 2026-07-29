@@ -1,4 +1,4 @@
-from app import client
+from src.config import client
 def get_summary(text):
     """Simple summary of abstract (concise)."""
     if not text:
