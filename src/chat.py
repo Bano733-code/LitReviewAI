@@ -1,7 +1,5 @@
 import streamlit as st
-from src.ai_functions import client
-
-
+from src.config import client
 def chat_section():
 
     st.header("💬 Chat With Papers")
