@@ -9,10 +9,6 @@ from src.ai_functions import (
     get_section_summaries
 )
 
-from src.embeddings import extract_keywords
-
-
-
 def upload_section():
 
     st.header("📤 Upload Research Papers")
