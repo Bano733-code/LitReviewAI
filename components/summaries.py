@@ -1,163 +1,322 @@
 import streamlit as st
 import pandas as pd
+
 from src.bibtex import export_bibtex
+
+
+def display_section(title, content, icon):
+
+    st.markdown(
+        f"### {icon} {title}"
+    )
+
+    if content:
+        st.write(content)
+    else:
+        st.info(
+            f"{title} not generated yet."
+        )
 
 
 def summary_section():
 
-    st.header("📑 Paper Summaries")
+    st.header("📑 Literature Analysis Dashboard")
+
 
     if not st.session_state.papers:
-        st.info("📂 Upload research papers first.")
+
+        st.info(
+            "📂 Upload research papers first."
+        )
+
         return
 
-    st.success(f"Total Papers: {len(st.session_state.papers)}")
 
-    for i, paper in enumerate(st.session_state.papers, start=1):
 
-        with st.expander(f"📄 {i}. {paper.get('title', 'Untitled')}"):
+    total = len(
+        st.session_state.papers
+    )
+
+
+    st.success(
+        f"📚 Total Papers Analyzed: {total}"
+    )
+
+
+
+    # ===============================
+    # PAPER CARDS
+    # ===============================
+
+    for index, paper in enumerate(
+        st.session_state.papers,
+        start=1
+    ):
+
+
+        title = paper.get(
+            "title",
+            "Untitled Paper"
+        )
+
+
+        with st.expander(
+            f"📄 {index}. {title}",
+            expanded=False
+        ):
+
 
             # -------------------------
-            # Basic Information
+            # Metadata
             # -------------------------
 
-            st.subheader("📌 Paper Information")
+            st.markdown(
+                "## 📌 Paper Information"
+            )
 
-            authors = paper.get("authors", ["Unknown"])
+
+            authors = paper.get(
+                "authors",
+                ["Unknown"]
+            )
+
 
             if isinstance(authors, list):
-                authors_text = ", ".join(authors)
+
+                authors_text = ", ".join(
+                    authors
+                )
+
+                author_count = len(authors)
+
             else:
+
                 authors_text = str(authors)
+                author_count = 1
 
-            st.write("**👤 Authors:**", authors_text)
 
-            st.write(
-                "**📄 Title:**",
-                paper.get("title", "Unknown")
-            )
+
+            col1, col2 = st.columns(2)
+
+
+            with col1:
+
+                st.write(
+                    "👤 **Authors**"
+                )
+
+                st.write(
+                    authors_text
+                )
+
+
+            with col2:
+
+                st.write(
+                    "📄 **Title**"
+                )
+
+                st.write(
+                    title
+                )
+
+
+
+            st.divider()
+
+
 
             # -------------------------
-            # Paper Statistics
+            # Statistics
             # -------------------------
 
-            text = paper.get("text", "")
-
-            word_count = len(text.split())
-
-            reading_time = max(1, word_count // 220)
-
-            col1, col2, col3 = st.columns(3)
-
-            col1.metric(
-                "Words",
-                f"{word_count:,}"
+            text = paper.get(
+                "text",
+                ""
             )
 
-            col2.metric(
-                "Authors",
-                len(authors) if isinstance(authors, list) else 1
+
+            words = len(
+                text.split()
             )
 
-            col3.metric(
-                "Reading Time",
+
+            reading_time = max(
+                1,
+                words // 220
+            )
+
+
+
+            c1, c2, c3 = st.columns(3)
+
+
+            c1.metric(
+                "📝 Words",
+                f"{words:,}"
+            )
+
+
+            c2.metric(
+                "👥 Authors",
+                author_count
+            )
+
+
+            c3.metric(
+                "⏱ Reading Time",
                 f"{reading_time} min"
             )
 
+
+
             st.divider()
+
+
 
             # -------------------------
             # Abstract
             # -------------------------
 
-            with st.expander("📖 Abstract"):
+            display_section(
+                "Abstract",
+                paper.get(
+                    "abstract",
+                    ""
+                ),
+                "📖"
+            )
 
-                abstract = paper.get("abstract", "")
 
-                if abstract:
-                    st.write(abstract)
-                else:
-                    st.info("Abstract not available.")
-
-            # -------------------------
-            # AI Summary
-            # -------------------------
-
-            st.subheader("🧠 AI Summary")
-
-            summary = paper.get("summary", "")
-
-            if summary:
-                st.write(summary)
-            else:
-                st.info("Summary has not been generated yet.")
 
             # -------------------------
-            # Research Gaps
+            # AI Insights
             # -------------------------
 
-            st.subheader("🔬 Research Gaps")
+            st.divider()
 
-            gaps = paper.get("research_gaps", "")
 
-            if gaps:
-                st.write(gaps)
-            else:
-                st.info("Research gaps not available.")
+            display_section(
+                "AI Summary",
+                paper.get(
+                    "summary",
+                    ""
+                ),
+                "🧠"
+            )
 
-            # -------------------------
-            # Limitations
-            # -------------------------
 
-            st.subheader("⚠️ Limitations")
+            display_section(
+                "Research Gaps",
+                paper.get(
+                    "research_gaps",
+                    ""
+                ),
+                "🔬"
+            )
 
-            limitations = paper.get("limitations", "")
 
-            if limitations:
-                st.write(limitations)
-            else:
-                st.info("Limitations not available.")
+            display_section(
+                "Limitations",
+                paper.get(
+                    "limitations",
+                    ""
+                ),
+                "⚠️"
+            )
+
+
 
             # -------------------------
             # Keywords
             # -------------------------
 
-            if "keywords" in paper and paper["keywords"]:
+            keywords = paper.get(
+                "keywords",
+                []
+            )
 
-                st.subheader("🏷 Keywords")
 
-                if isinstance(paper["keywords"], list):
-                    st.write(", ".join(paper["keywords"]))
+            if keywords:
+
+                st.divider()
+
+                st.markdown(
+                    "### 🏷 Keywords"
+                )
+
+
+                if isinstance(
+                    keywords,
+                    list
+                ):
+
+                    st.write(
+                        " • ".join(keywords)
+                    )
+
                 else:
-                    st.write(paper["keywords"])
 
-            st.divider()
+                    st.write(
+                        keywords
+                    )
 
-    # ---------------------------------------
-    # Export Section
-    # ---------------------------------------
 
-    st.subheader("📥 Export")
 
-    df = pd.DataFrame(st.session_state.papers)
+    # ===============================
+    # EXPORT
+    # ===============================
 
-    st.download_button(
-        "⬇ Download CSV",
-        df.to_csv(index=False).encode("utf-8"),
-        file_name="litreviewai_results.csv",
-        mime="text/csv",
+    st.divider()
+
+
+    st.subheader(
+        "📥 Export Results"
     )
 
-    st.download_button(
-        "⬇ Download JSON",
-        df.to_json(indent=2).encode("utf-8"),
-        file_name="litreviewai_results.json",
-        mime="application/json",
+
+    df = pd.DataFrame(
+        st.session_state.papers
     )
 
-    st.download_button(
-        "⬇ Export BibTeX",
-        export_bibtex(st.session_state.papers),
-        file_name="papers.bib",
-        mime="text/plain",
-    )
+
+    col1, col2, col3 = st.columns(3)
+
+
+
+    with col1:
+
+        st.download_button(
+            "⬇ CSV",
+            df.to_csv(
+                index=False
+            ).encode("utf-8"),
+            "litreviewai_results.csv",
+            "text/csv"
+        )
+
+
+
+    with col2:
+
+        st.download_button(
+            "⬇ JSON",
+            df.to_json(
+                indent=2
+            ).encode("utf-8"),
+            "litreviewai_results.json",
+            "application/json"
+        )
+
+
+
+    with col3:
+
+        st.download_button(
+            "⬇ BibTeX",
+            export_bibtex(
+                st.session_state.papers
+            ),
+            "papers.bib",
+            "text/plain"
+        )
