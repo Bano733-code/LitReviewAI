@@ -4,10 +4,10 @@ from components.upload import upload_section
 from components.summaries import summary_section
 from components.insights import insights_section
 
+from src.chat import chat_section
 from src.topic_modeling import lda_topic_modeling
 from src.visualizations import generate_wordcloud
-from src.chat import chat_section
-from src.config import client
+
 
 # =====================================================
 # PAGE CONFIGURATION
@@ -19,8 +19,7 @@ st.set_page_config(
     layout="wide"
 )
 
-
-st.title("📚 LitReviewAI: Automated Research Paper Reviewer")
+st.title("📚 LitReviewAI: AI-Powered Research Literature Assistant")
 
 
 # =====================================================
@@ -29,7 +28,6 @@ st.title("📚 LitReviewAI: Automated Research Paper Reviewer")
 
 if "papers" not in st.session_state:
     st.session_state.papers = []
-
 
 if "collections" not in st.session_state:
     st.session_state.collections = {}
@@ -42,11 +40,11 @@ if "collections" not in st.session_state:
 tabs = st.tabs(
     [
         "ℹ️ About",
-        "📤 Upload Papers",
+        "📤 Upload",
+        "💬 Chat",
         "📑 Summaries",
         "📊 Topic Modeling",
-        "⚡ Insights",
-        "💬 Chat"
+        "⚡ Insights"
     ]
 )
 
@@ -59,23 +57,24 @@ with tabs[0]:
 
     st.header("About LitReviewAI")
 
-    st.write(
+    st.markdown(
         """
-        **LitReviewAI** is an AI-powered research assistant that helps
-        researchers analyze scientific literature.
+### LitReviewAI
 
-        Features:
+LitReviewAI is an AI-powered research assistant designed to help researchers analyze, summarize, and explore scientific literature.
 
-        - 📄 Automatic PDF analysis
-        - 🧠 AI-powered paper summarization
-        - 🔍 Research gap detection
-        - ⚠️ Limitation extraction
-        - 🔑 Keyword extraction using KeyBERT
-        - 📊 Topic modeling using LDA
-        - 🌐 Collaboration network analysis
-        - 💬 Chat with research papers
-        - 📚 BibTeX citation export
-        """
+### Features
+
+- 📄 Automatic PDF parsing
+- 🧠 AI-powered paper analysis
+- 🔍 Research gap identification
+- ⚠️ Limitation extraction
+- 🔑 Keyword extraction
+- 📊 Topic modeling (LDA)
+- 🌐 Co-author collaboration network
+- 💬 Chat with uploaded research papers (RAG)
+- 📚 BibTeX export
+"""
     )
 
 
@@ -84,76 +83,58 @@ with tabs[0]:
 # =====================================================
 
 with tabs[1]:
-
     upload_section()
-
-
-
-# =====================================================
-# SUMMARIES
-# =====================================================
-
-with tabs[2]:
-
-    summary_section()
-
-
-
-# =====================================================
-# TOPIC MODELING
-# =====================================================
-
-with tabs[3]:
-
-    st.header("📊 Topic Modeling")
-
-    if st.session_state.papers:
-
-        topics_df = lda_topic_modeling(
-            st.session_state.papers
-        )
-
-        if not topics_df.empty:
-            st.dataframe(
-                topics_df,
-                use_container_width=True
-            )
-
-        else:
-            st.info(
-                "Not enough text for topic modeling."
-            )
-
-
-        st.subheader("Word Cloud")
-
-        generate_wordcloud(
-            st.session_state.papers
-        )
-
-
-    else:
-
-        st.info(
-            "Upload papers first."
-        )
-
-
-
-# =====================================================
-# INSIGHTS
-# =====================================================
-
-with tabs[4]:
-
-    insights_section()
-
 
 
 # =====================================================
 # CHAT
 # =====================================================
 
-with tabs[5]:
-
+with tabs[2]:
     chat_section()
+
+
+# =====================================================
+# SUMMARIES
+# =====================================================
+
+with tabs[3]:
+    summary_section()
+
+
+# =====================================================
+# TOPIC MODELING
+# =====================================================
+
+with tabs[4]:
+
+    st.header("📊 Topic Modeling")
+
+    if st.session_state.papers:
+
+        topics = lda_topic_modeling(
+            st.session_state.papers
+        )
+
+        if not topics.empty:
+            st.dataframe(
+                topics,
+                use_container_width=True
+            )
+
+        st.subheader("☁️ Word Cloud")
+
+        generate_wordcloud(
+            st.session_state.papers
+        )
+
+    else:
+        st.info("Upload papers first.")
+
+
+# =====================================================
+# INSIGHTS
+# =====================================================
+
+with tabs[5]:
+    insights_section()
