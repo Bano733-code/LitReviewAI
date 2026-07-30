@@ -31,17 +31,18 @@ def upload_section():
             text = extract_text_from_pdf(file)
 
 
-            meta["section_summary"] = get_section_summaries(text)
-
-            meta["summary"] = get_summary(
+            analysis = get_paper_analysis(
+                meta["abstract"]
+            )
+            meta["summary"] = analysis(
                 meta["abstract"]
             )
 
-            meta["limitations"] = get_limitations(
+            meta["limitations"] = analysis(
                 meta["abstract"]
             )
 
-            meta["research_gaps"] = get_research_gaps(
+            meta["research_gaps"] = analysis(
                 meta["abstract"]
             )
 
