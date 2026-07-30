@@ -41,8 +41,3 @@ def summary_section():
                 "Research gaps:",
                 paper["research_gaps"]
             )
-
-            st.write(
-                "Keywords:",
-                paper["keywords"]
-            )
