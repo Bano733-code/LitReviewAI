@@ -1,8 +1,9 @@
 import streamlit as st
 import matplotlib.pyplot as plt
-from wordcloud import WordCloud
+from wordcloud import WordCloud , STOPWORDS
 import networkx as nx
 import plotly.graph_objects as go
+from src.metadata_extractor import looks_like_affiliation
 from src.constants import STOP_WORDS
 def generate_wordcloud(papers):
     text = " ".join([p.get("abstract", "") for p in papers if p.get("abstract")])
