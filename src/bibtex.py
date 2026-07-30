@@ -1,3 +1,5 @@
+import re
+import bibtexparser
 def export_bibtex(papers):
     db = {"entries": []}
     for i, p in enumerate(papers):
