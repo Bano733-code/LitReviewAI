@@ -237,7 +237,7 @@ def analyze_paper(text):
 
         "summary":
             generate_summary(text),
-
+ 
         "research_gaps":
             generate_research_gaps(text),
 
