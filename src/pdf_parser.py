@@ -1,3 +1,4 @@
+import fitz  # PyMuPDF
 def extract_text_from_pdf(pdf_file):
     """Extract all text from PDF. Resets pointer outside if needed."""
     data = pdf_file.read()
