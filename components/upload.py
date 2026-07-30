@@ -5,7 +5,7 @@ from src.pdf_parser import extract_text_from_pdf
 
 from src.rag_pipeline import (
     create_rag_database,
-    generate_paper_summary,
+    generate_summary,
     generate_limitations,
     generate_research_gaps
 )
