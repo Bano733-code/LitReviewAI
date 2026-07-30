@@ -12,3 +12,5 @@ bibtexparser
 groq
 sentence-transformers
 torch
+faiss-cpu
+requests
