@@ -1,3 +1,8 @@
+import streamlit as st
+import matplotlib.pyplot as plt
+from wordcloud import WordCloud, STOPWORDS
+import networkx as nx
+import plotly.graph_objects as go
 def generate_wordcloud(papers):
     text = " ".join([p.get("abstract", "") for p in papers if p.get("abstract")])
     if not text:
