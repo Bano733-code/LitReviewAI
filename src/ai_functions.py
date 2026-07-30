@@ -1,4 +1,5 @@
 from src.config import client
+import time
 def get_summary(text):
     """Simple summary of abstract (concise)."""
     if not text:
