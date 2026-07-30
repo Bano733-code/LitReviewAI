@@ -50,7 +50,7 @@ def upload_section():
             # Generate AI Summary
             # ---------------------------------------
             try:
-                meta["summary"] = generate_paper_summary(text)
+                meta["summary"] = generate_summary(text)
             except Exception:
                 meta["summary"] = "Summary could not be generated."
 
