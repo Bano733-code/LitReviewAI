@@ -5,6 +5,8 @@ from gensim.utils import simple_preprocess
 
 import nltk
 from nltk.corpus import stopwords
+nltk.download("stopwords")
+stop_words = set(stopwords.words("english"))
 def lda_topic_modeling(papers, num_topics=3):
     # Preprocess abstracts with stopword removal
     texts = [
