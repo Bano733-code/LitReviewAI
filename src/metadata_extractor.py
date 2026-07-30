@@ -1,4 +1,4 @@
-
+from src.pdf_parser import extract_text_from_pdf
 def extract_title(text):
     """Extracts paper title (before Abstract), avoiding citations and irrelevant headers."""
     lines = [l.strip() for l in text.split("\n") if l.strip()]
