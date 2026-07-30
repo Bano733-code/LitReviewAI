@@ -2,12 +2,8 @@ import streamlit as st
 
 from src.metadata_extractor import extract_metadata
 from src.pdf_parser import extract_text_from_pdf
-from src.ai_functions import (
-    get_summary,
-    get_limitations,
-    get_research_gaps,
-    get_section_summaries
-)
+from src.ai_functions import get_paper_analysis
+
 
 def upload_section():
 
