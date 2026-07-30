@@ -19,10 +19,14 @@ class VectorStore:
         self.docs_path = docs_path
 
 
-        # Load existing database if available
+        # Load existing database
         self.load()
 
 
+
+    # =====================================================
+    # BUILD VECTOR DATABASE
+    # =====================================================
 
     def build(
         self,
@@ -31,7 +35,7 @@ class VectorStore:
     ):
 
         """
-        Build FAISS vector database
+        Create FAISS vector database.
 
         embeddings:
             SentenceTransformer embeddings
@@ -39,6 +43,10 @@ class VectorStore:
         documents:
             text chunks
         """
+
+
+        if len(embeddings) == 0:
+            return
 
 
         embeddings = np.array(
@@ -55,7 +63,7 @@ class VectorStore:
         dimension = embeddings.shape[1]
 
 
-        # Cosine similarity index
+        # Cosine similarity search
         self.index = faiss.IndexFlatIP(
             dimension
         )
@@ -69,10 +77,13 @@ class VectorStore:
         self.documents = documents
 
 
-        # Save database
         self.save()
 
 
+
+    # =====================================================
+    # SEARCH
+    # =====================================================
 
     def search(
         self,
@@ -80,11 +91,8 @@ class VectorStore:
         k=5
     ):
 
-
         if self.index is None:
-
             return []
-
 
 
         query_embedding = np.array(
@@ -92,7 +100,6 @@ class VectorStore:
         ).astype("float32")
 
 
-        # Normalize query vector
         faiss.normalize_L2(
             query_embedding
         )
@@ -104,7 +111,7 @@ class VectorStore:
         )
 
 
-        results=[]
+        results = []
 
 
         for score, idx in zip(
@@ -116,10 +123,7 @@ class VectorStore:
             if idx != -1:
 
                 results.append(
-                    {
-                        "text": self.documents[idx],
-                        "score": float(score)
-                    }
+                    self.documents[idx]
                 )
 
 
@@ -127,20 +131,56 @@ class VectorStore:
 
 
 
+    # =====================================================
+    # SAVE DATABASE
+    # =====================================================
+
     def save(self):
 
         """
-        Save FAISS index and documents
+        Save FAISS index + documents.
+        Creates folders automatically.
         """
 
 
-        if self.index:
+        # Create directories if missing
+
+        index_dir = os.path.dirname(
+            self.index_path
+        )
+
+        docs_dir = os.path.dirname(
+            self.docs_path
+        )
+
+
+        if index_dir:
+
+            os.makedirs(
+                index_dir,
+                exist_ok=True
+            )
+
+
+        if docs_dir:
+
+            os.makedirs(
+                docs_dir,
+                exist_ok=True
+            )
+
+
+        # Save FAISS index
+
+        if self.index is not None:
 
             faiss.write_index(
                 self.index,
                 self.index_path
             )
 
+
+        # Save documents
 
         with open(
             self.docs_path,
@@ -154,10 +194,14 @@ class VectorStore:
 
 
 
+    # =====================================================
+    # LOAD DATABASE
+    # =====================================================
+
     def load(self):
 
         """
-        Load existing vector database
+        Load FAISS database if available.
         """
 
 
