@@ -4,7 +4,6 @@ from src.metadata_extractor import extract_metadata
 from src.pdf_parser import extract_text_from_pdf
 from src.ai_functions import get_paper_analysis
 
-
 def upload_section():
 
     st.header("📤 Upload Research Papers")
@@ -22,11 +21,6 @@ def upload_section():
         for file in uploaded_files:
 
             meta = extract_metadata(file)
-
-
-            text = extract_text_from_pdf(file)
-
-
             analysis = get_paper_analysis(
                 meta["abstract"]
             )
@@ -34,13 +28,6 @@ def upload_section():
             meta["limitations"] = analysis["limitations"]
 
             meta["research_gaps"] = analysis["research_gaps"]
-
-
-            meta["keywords"] = ", ".join(
-                extract_keywords(
-                    meta["abstract"]
-                )
-            )
 
 
             st.session_state.papers.append(meta)
