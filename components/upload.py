@@ -5,6 +5,7 @@ from src.pdf_parser import extract_text_from_pdf
 
 from src.rag_pipeline import (
     create_rag_database,
+    summarize_abstract,
     generate_summary,
     generate_limitations,
     generate_research_gaps
@@ -32,61 +33,124 @@ def upload_section():
 
         for idx, file in enumerate(uploaded_files):
 
-            status.write(f"Processing **{file.name}**...")
+            status.write(
+                f"Processing **{file.name}**..."
+            )
 
             # ---------------------------------------
-            # Extract metadata
+            # Extract Metadata
             # ---------------------------------------
+
             meta = extract_metadata(file)
+
+            # Reset file pointer
             file.seek(0)
 
             # ---------------------------------------
-            # Extract complete paper text
+            # Extract Full Paper Text
             # ---------------------------------------
+
             text = extract_text_from_pdf(file)
 
             meta["text"] = text
 
             # ---------------------------------------
-            # Generate AI Summary
+            # Generate Abstract Summary
             # ---------------------------------------
+
             try:
-                meta["summary"] = generate_summary(text)
+
+                if meta.get("abstract"):
+
+                    meta["abstract_summary"] = summarize_abstract(
+                        meta["abstract"]
+                    )
+
+                else:
+
+                    meta["abstract_summary"] = (
+                        "Abstract not available."
+                    )
+
             except Exception:
-                meta["summary"] = "Summary could not be generated."
+
+                meta["abstract_summary"] = (
+                    "Abstract summary could not be generated."
+                )
+
+            # ---------------------------------------
+            # Generate AI Paper Summary
+            # ---------------------------------------
+
+            try:
+
+                meta["summary"] = generate_summary(
+                    text
+                )
+
+            except Exception:
+
+                meta["summary"] = (
+                    "Summary could not be generated."
+                )
 
             # ---------------------------------------
             # Generate Limitations
             # ---------------------------------------
+
             try:
-                meta["limitations"] = generate_limitations(text)
+
+                meta["limitations"] = (
+                    generate_limitations(text)
+                )
+
             except Exception:
-                meta["limitations"] = "Limitations could not be extracted."
+
+                meta["limitations"] = (
+                    "Limitations could not be extracted."
+                )
 
             # ---------------------------------------
             # Generate Research Gaps
             # ---------------------------------------
-            try:
-                meta["research_gaps"] = generate_research_gaps(text)
-            except Exception:
-                meta["research_gaps"] = "Research gaps could not be generated."
 
+            try:
+
+                meta["research_gaps"] = (
+                    generate_research_gaps(text)
+                )
+
+            except Exception:
+
+                meta["research_gaps"] = (
+                    "Research gaps could not be generated."
+                )
+
+            # Save paper
             new_papers.append(meta)
 
-            progress.progress((idx + 1) / total_files)
+            progress.progress(
+                (idx + 1) / total_files
+            )
 
         # ---------------------------------------
-        # Save papers
+        # Store Papers
         # ---------------------------------------
-        st.session_state.papers.extend(new_papers)
+
+        st.session_state.papers.extend(
+            new_papers
+        )
 
         # ---------------------------------------
-        # Build Vector Database
+        # Build FAISS Vector Database
         # ---------------------------------------
-        create_rag_database(st.session_state.papers)
 
-        status.empty()
+        create_rag_database(
+            st.session_state.papers
+        )
+
         progress.empty()
+        status.empty()
 
         st.success(
             f"Successfully processed {len(new_papers)} paper(s)."
