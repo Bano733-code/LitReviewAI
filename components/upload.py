@@ -2,7 +2,9 @@ import streamlit as st
 
 from src.metadata_extractor import extract_metadata
 from src.pdf_parser import extract_text_from_pdf
-from src.ai_functions import get_paper_analysis
+from src.rag_pipeline import create_rag_database
+
+
 
 def upload_section():
 
@@ -18,19 +20,53 @@ def upload_section():
 
     if uploaded_files:
 
+
+        new_papers = []
+
+
         for file in uploaded_files:
 
+
+            # Metadata extraction
             meta = extract_metadata(file)
-            analysis = get_paper_analysis(
-                meta["abstract"]
+
+
+            # Extract complete paper text
+            text = extract_text_from_pdf(file)
+
+
+            # Store full text for RAG
+            meta["text"] = text
+
+
+            # Add empty placeholders
+            meta["summary"] = (
+                "Generated using RAG pipeline"
             )
-            meta["summary"] = analysis["summary"]
-            meta["limitations"] = analysis["limitations"]
 
-            meta["research_gaps"] = analysis["research_gaps"]
+            meta["limitations"] = (
+                "Generated when queried"
+            )
+
+            meta["research_gaps"] = (
+                "Generated when queried"
+            )
 
 
-            st.session_state.papers.append(meta)
+            new_papers.append(meta)
+
+
+
+        # Add papers to session
+        st.session_state.papers.extend(
+            new_papers
+        )
+
+
+        # Build FAISS vector database
+        create_rag_database(
+            st.session_state.papers
+        )
 
 
         st.success(
