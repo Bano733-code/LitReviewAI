@@ -40,17 +40,11 @@ def upload_section():
 
 
             # Add empty placeholders
-            meta["summary"] = (
-                "Generated using RAG pipeline"
-            )
+            meta["summary"] = ""
 
-            meta["limitations"] = (
-                "Generated when queried"
-            )
+            meta["limitations"] = ""
 
-            meta["research_gaps"] = (
-                "Generated when queried"
-            )
+            meta["research_gaps"] = ""
 
 
             new_papers.append(meta)
