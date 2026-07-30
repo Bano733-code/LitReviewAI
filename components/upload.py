@@ -30,10 +30,10 @@ def upload_section():
             analysis = get_paper_analysis(
                 meta["abstract"]
             )
-            meta["summary"] = analysis["abstract"]
-            meta["limitations"] = analysis["abstract"]
+            meta["summary"] = analysis["summary"]
+            meta["limitations"] = analysis["limitations"]
 
-            meta["research_gaps"] = analysis["abstract"]
+            meta["research_gaps"] = analysis["research_gaps"]
 
 
             meta["keywords"] = ", ".join(
