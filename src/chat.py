@@ -1,42 +1,40 @@
 import streamlit as st
-from src.config import client
+
+from src.rag_pipeline import ask_rag
+
+
 def chat_section():
 
     st.header("💬 Chat With Papers")
 
-    context = "\n".join(
-        [
-            p["abstract"]
-            for p in st.session_state.papers
-        ]
-    )
-
 
     question = st.text_area(
-        "Ask your question"
+        "Ask your question about uploaded papers"
     )
 
 
     if st.button("Ask"):
 
-        response = client.chat.completions.create(
-            model="llama-3.1-8b-instant",
-            messages=[
-                {
-                    "role":"user",
-                    "content":
-                    f"""
-                    Context:
-                    {context}
+        if not question.strip():
 
-                    Question:
-                    {question}
-                    """
-                }
-            ]
+            st.warning(
+                "Please enter a question."
+            )
+
+            return
+
+
+        with st.spinner(
+            "Searching papers..."
+        ):
+
+            answer = ask_rag(
+                question
+            )
+
+
+        st.subheader(
+            "🧠 Answer"
         )
 
-
-        st.write(
-            response.choices[0].message.content
-        )
+        st.write(answer)
