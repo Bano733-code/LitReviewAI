@@ -172,28 +172,20 @@ def summary_section():
 
             st.divider()
 
-
-
-            # -------------------------
-            # Abstract
-            # -------------------------
-
-            display_section(
-                "Abstract",
-                paper.get(
-                    "abstract",
-                    ""
-                ),
-                "📖"
-            )
-
-
-
             # -------------------------
             # AI Insights
             # -------------------------
 
             st.divider()
+
+            display_section(
+                "Abstract Summary",
+                paper.get(
+                    "abstract_summary",
+                    ""
+                ),
+                "📖"
+            )
 
 
             display_section(
