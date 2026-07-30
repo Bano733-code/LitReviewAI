@@ -3,7 +3,7 @@ import requests
 
 
 GROBID_URL = (
-"http://localhost:8070/api/processFulltextDocument"
+"https://grobid.science-miner.com/api/processFulltextDocument"
 )
 
 
