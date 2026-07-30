@@ -38,6 +38,7 @@ def upload_section():
             # Extract metadata
             # ---------------------------------------
             meta = extract_metadata(file)
+            file.seek(0)
 
             # ---------------------------------------
             # Extract complete paper text
