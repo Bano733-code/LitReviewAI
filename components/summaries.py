@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from src.export import export_bibtex
+from src.bibtex import export_bibtex
 
 def summary_section():
 
