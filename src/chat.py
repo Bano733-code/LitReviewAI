@@ -17,15 +17,6 @@ def chat_section():
     st.write(
         """
 Ask questions about your uploaded papers.
-
-Examples:
-- Summarize this paper
-- What is the main contribution?
-- What methodology was used?
-- What are the limitations?
-- What future work is suggested?
-- What biomarkers were identified?
-- Compare the uploaded papers
 """
     )
 
