@@ -1,5 +1,6 @@
 import re 
 from src.pdf_parser import extract_text_from_pdf
+from src.grobid import extract_metadata_grobid
 def extract_title(text):
     """Extracts paper title (before Abstract), avoiding citations and irrelevant headers."""
     lines = [l.strip() for l in text.split("\n") if l.strip()]
@@ -159,12 +160,45 @@ def extract_abstract(text):
             abstract_lines.append(line.strip())
     abstract = " ".join(abstract_lines).strip()
     return abstract
-
-
 def extract_metadata(pdf_file):
-    """Extract title, authors, abstract from PDF file-like object."""
+    """
+    Extract metadata using GROBID first.
+    If GROBID fails, use the regex-based fallback.
+    """
+
+    # Read full paper text once
     text = extract_text_from_pdf(pdf_file)
-    title = extract_title(text)
-    authors = extract_authors(text)
-    abstract = extract_abstract(text)
-    return {"title": title or "Untitled", "authors": authors, "abstract": abstract or ""}
+
+    # Reset pointer because extract_text_from_pdf() consumed it
+    pdf_file.seek(0)
+
+    # -------------------------------
+    # Try GROBID
+    # -------------------------------
+    try:
+
+        grobid_meta = extract_metadata_grobid(pdf_file)
+
+        if grobid_meta:
+
+            title = grobid_meta.get("title", "").strip()
+            authors = grobid_meta.get("authors", [])
+            abstract = grobid_meta.get("abstract", "").strip()
+
+            return {
+                "title": title if title else extract_title(text),
+                "authors": authors if authors else extract_authors(text),
+                "abstract": abstract if abstract else extract_abstract(text)
+            }
+
+    except Exception:
+        pass
+
+    # -------------------------------
+    # Fallback (Regex)
+    # -------------------------------
+    return {
+        "title": extract_title(text),
+        "authors": extract_authors(text),
+        "abstract": extract_abstract(text)
+    }
