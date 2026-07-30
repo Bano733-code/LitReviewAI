@@ -1,3 +1,10 @@
+import pandas as pd
+
+from gensim import corpora, models
+from gensim.utils import simple_preprocess
+
+import nltk
+from nltk.corpus import stopwords
 def lda_topic_modeling(papers, num_topics=3):
     # Preprocess abstracts with stopword removal
     texts = [
