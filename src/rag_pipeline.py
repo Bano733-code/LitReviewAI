@@ -112,6 +112,34 @@ Question:
 # =====================================================
 # AI SUMMARY
 # =====================================================
+def summarize_abstract(abstract):
+
+    prompt = f"""
+Summarize this abstract in 5-6 sentences.
+
+Include:
+- Research problem
+- Methodology
+- Main findings
+- Conclusion
+
+Abstract:
+
+{abstract[:3000]}
+"""
+
+    response = client.chat.completions.create(
+        model="llama-3.1-8b-instant",
+        messages=[
+            {
+                "role":"user",
+                "content":prompt
+            }
+        ],
+        temperature=0.3
+    )
+
+    return response.choices[0].message.content
 
 def generate_summary(text):
 
