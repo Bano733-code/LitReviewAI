@@ -1,15 +1,16 @@
 import streamlit as st
 import matplotlib.pyplot as plt
-from wordcloud import WordCloud, STOPWORDS
+from wordcloud import WordCloud
 import networkx as nx
 import plotly.graph_objects as go
+from src.constants import STOP_WORDS
 def generate_wordcloud(papers):
     text = " ".join([p.get("abstract", "") for p in papers if p.get("abstract")])
     if not text:
         st.info("No abstracts to build a word cloud.")
         return
 
-    custom_stopwords = set(STOPWORDS).union(stop_words)
+    custom_stopwords = set(STOPWORDS).union(STOP_WORDS)
     wc = WordCloud(
         width=800,
         height=400,
