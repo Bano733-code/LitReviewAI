@@ -1,44 +1,9 @@
----
-title: LitReviewAI
-emoji: 💻
-colorFrom: green
-colorTo: pink
-sdk: streamlit
-sdk_version: 1.60.0
-app_file: app.py
-pinned: false
-short_description: 👉 “Turn PDFs into Research Insights in Seconds."
----
-
-Check out the configuration reference at https://huggingface.co/docs/hub/spaces-config-reference
-
----
-
-```markdown
 # 📚 LitReviewAI
 ## AI-Powered Research Literature Assistant
-
-
-<p align="center">
-
-<img src="assets/logo.png" width="180">
-
-</p>
-
 
 LitReviewAI is an intelligent research assistant designed to help researchers analyze, summarize, and organize scientific literature using Artificial Intelligence and Natural Language Processing.
 
 It automates the tedious parts of literature review by extracting insights from research papers, identifying research gaps, discovering topics, and enabling interactive conversations with scientific documents.
-
-
----
-
-# 🚀 Demo
-
-🔗 Hugging Face Space:
-
-(Add your Space link here)
-
 
 ---
 
@@ -274,15 +239,3 @@ Precision Medicine
 📜 License
 
 MIT License
-
-
----
-
-This README will make LitReviewAI look like a **real AI research product**, not just a Streamlit assignment. It highlights the parts professors usually care about:
-
-- scientific motivation
-- AI methodology
-- architecture
-- reproducibility
-- future research potential
-- technical depth
