@@ -86,7 +86,7 @@ Export analyzed papers into:
 
 # 🏗️ System Architecture
 
-
+```
 
 PDF Papers
 |
@@ -99,8 +99,8 @@ Metadata + Abstract Extraction
 |
 AI/NLP Pipeline
 |
-|------------------
-| |
+|
+| 
 Summarization Keyword Extraction
 (Groq LLM) (KeyBERT)
 |
@@ -110,7 +110,7 @@ Research Insights
 |
 Interactive Streamlit Dashboard
 
-
+```
 
 ---
 
